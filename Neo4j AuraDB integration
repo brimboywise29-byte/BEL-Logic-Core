@@ -1,0 +1,30 @@
+from neo4j import GraphDatabase
+import os
+
+# These pull securely from your environment variables or GitHub Secrets
+URI = os.getenv("NEO4J_URI", "neo4j+s://b57fa81f.databases.neo4j.io")
+AUTH = (os.getenv("NEO4J_USERNAME", "neo4j"), os.getenv("NEO4J_PASSWORD"))
+
+def test_ulb_connection():
+    try:
+        # Initialize the connection to the AuraDB instance
+        driver = GraphDatabase.driver(URI, auth=AUTH)
+        
+        # The B.E.L. engine verifies the handshake
+        driver.verify_connectivity()
+        print("✅ Success: The B.E.L. logic engine is successfully communicating with AuraDB!")
+        
+        # Run a micro-test to ensure read capability for the UIP scripts
+        records, summary, keys = driver.execute_query(
+            "RETURN 'AuraDB is live and ready for formatting.' AS status"
+        )
+        print(f"Status: {records[0]['status']}")
+        
+    except Exception as e:
+        print(f"❌ Connection Failed. Double-check your GitHub Secrets and URI: {e}")
+    finally:
+        if 'driver' in locals():
+            driver.close()
+
+if __name__ == "__main__":
+    test_ulb_connection()
